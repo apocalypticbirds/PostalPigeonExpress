@@ -4,7 +4,9 @@ const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/schema.js');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://user1:ZZQLuMDv5dOJEEmB@cluster0-jhmtv.mongodb.net/postalpigeon?retryWrites=true');
+//mongoose.connect('mongodb+srv://user1:ZZQLuMDv5dOJEEmB@cluster0-jhmtv.mongodb.net/postalpigeon?retryWrites=true');
+mongoose.connect('mongodb+srv://user123:xRTUFSAdVrlaud8F@postalpigeon-zj3rz.mongodb.net/test?retryWrites=true');
+
 mongoose.connection.once('open', () => {
     console.log('Connected to Mongo')
 });

@@ -14,6 +14,55 @@ const {
 } = graphql;
 
 
+const UserType = new GraphQLObjectType({
+    name: "User",
+    fields: () => ({
+        _id: { type: GraphQLID },
+        first_name: { type: GraphQLString },
+        last_name: { type: GraphQLString },
+        conversations: { type: GraphQLList(GraphQLID) }
+    })
+});
+
+
+const RootQuery = new GraphQLObjectType({
+    name: 'RootQuery',
+    fields: {
+        /*user: {
+            type: UserType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                //return User.findById(args.id)
+            }
+        },*/
+
+
+        /*user: {
+            type: UserType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                return User.findById(args.id)
+            }
+        },
+        conversation: {
+            type: ConversationType,
+            args: { id: { type: GraphQLID } },
+            resolve(parent, args) {
+                return Conversation.findById(args.id)
+            }
+        },*/
+        users: {
+            type: GraphQLList(UserType),
+            resolve(parent, args) {
+                return User.find({});
+            }
+        }
+    }
+});
+
+
+
+/*
 const MessageType = new GraphQLObjectType({
     name: 'Message',
     fields: () => ({
@@ -84,6 +133,8 @@ const RootQuery = new GraphQLObjectType({
     }
 });
 
+
+*/
 module.exports = new GraphQLSchema({
-    query: RootQuery
+  query: RootQuery
 });
