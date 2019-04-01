@@ -1,7 +1,7 @@
 const graphql = require('graphql');
 const Message = require('../models/message');
 const User = require('../models/user');
-const Conversation= require('../models/conversation');
+const Conversation = require('../models/conversation');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const {
@@ -22,7 +22,7 @@ const MessageType = new GraphQLObjectType({
         content: {type: GraphQLString},
         sender: {
             type: UserType,
-            resolve(parent, args){
+            resolve(parent, args) {
                 return User.findById(parent.id_sender)
             }
         },
@@ -62,7 +62,7 @@ const UserType = new GraphQLObjectType({
         conversation: {
             type: GraphQLList(ConversationType),
             resolve(parent, args) {
-                 return Conversation.find({_id: {$in: parent.conversationsIds}})
+                return Conversation.find({_id: {$in: parent.conversationsIds}})
             }
         }
     })
@@ -70,30 +70,54 @@ const UserType = new GraphQLObjectType({
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQuery',
-    fields:{
+    fields: {
         user: {
             type: UserType,
-            args: { id: {type: GraphQLID}},
-            resolve(parent, args){
+            args: {id: {type: GraphQLID}},
+            resolve(parent, args) {
                 return User.findById(args.id)
             }
         },
         conversation: {
             type: ConversationType,
-            args: { id: {type: GraphQLID}},
-            resolve(parent, args){
+            args: {id: {type: GraphQLID}},
+            resolve(parent, args) {
                 return Conversation.findById(args.id)
             }
         },
         users: {
             type: GraphQLList(UserType),
-            resolve(parent, args){
+            resolve(parent, args) {
                 return User.find({});
             }
         }
     }
 });
 
+const Mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        sendMessage: {
+            type: MessageType,
+            args: {
+                content: {type: GraphQLNonNull(GraphQLString)},
+                id_conversation:  {type: GraphQLNonNull(GraphQLString)},
+                id_sender: { type: GraphQLNonNull(GraphQLString)}    //temporary until the authorization starts working
+            },
+            resolve(parent, args){
+                const msg = new Message({
+                    id_conversation: args.id_conversation,
+                    id_sender: args.id_sender,
+                    content: args.content,
+                    date: new Date().toISOString()
+                });
+                return msg.save()
+            }
+        }
+    }
+});
+
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: Mutation,
 });
