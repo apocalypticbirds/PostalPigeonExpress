@@ -52,6 +52,7 @@ const ConversationType = new GraphQLObjectType({
     })
 });
 
+
 const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
@@ -133,7 +134,29 @@ const Mutation = new GraphQLObjectType({
           return conversation.save();
       }   
     },
-
+    //does not work
+    updateConversation: {
+        type: ConversationType,
+        args: {
+            id: {type: GraphQLNonNull(GraphQLID)},
+            name: {type: GraphQLString},
+            contributorsIds: {type: GraphQLList(GraphQLString)}
+        },
+        async resolve(parent, args) {
+            /*Conversation.updateOne(
+                {_id: args.id},
+                {$set:{name: args.name}});
+            //const conversation = Conversation.findById(args.id);
+            //conversation.name = args.name;
+            //if (args.contributorsIds !==undefined) 
+            //    conversation.contributorsIds.concat(args.contributorsIds);
+            //return conversation.update();
+            return Conversation.findById(args.id);*/
+            let doc = Conversation.findById(args.id);
+            doc.name = args.name;
+            await doc.save();
+        }
+    }
   }
 });
 
