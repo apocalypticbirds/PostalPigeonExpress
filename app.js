@@ -5,6 +5,7 @@ const schema = require('./schema/schema.js');
 const mongoose = require('mongoose');
 
 mongoose.connect('mongodb+srv://user1:ZZQLuMDv5dOJEEmB@cluster0-jhmtv.mongodb.net/postalpigeon?retryWrites=true');
+// mongoose.connect('mongodb+srv://user123:xRTUFSAdVrlaud8F@postalpigeon-zj3rz.mongodb.net/test?retryWrites=true');
 mongoose.connection.once('open', () => {
     console.log('Connected to Mongo')
 });
@@ -16,8 +17,9 @@ app.use('/graphql', graphqlHTTP({
     graphiql: true
 }));
 
-app.listen(4005, () => {
-    console.log('Im on port 4005')
+const port = 4000;
+app.listen(port, () => {
+    console.log(`Im on port ${port}`)
 });
 
 

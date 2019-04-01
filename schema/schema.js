@@ -2,6 +2,7 @@ const graphql = require('graphql');
 const Message = require('../models/message');
 const User = require('../models/user');
 const Conversation= require('../models/conversation');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const {
     GraphQLSchema,
@@ -17,9 +18,15 @@ const {
 const MessageType = new GraphQLObjectType({
     name: 'Message',
     fields: () => ({
-        id_message: {type: GraphQLID},
-        message: {type: GraphQLString},
-        id_sender: {type: GraphQLID}
+        id: {type: GraphQLID},
+        content: {type: GraphQLString},
+        sender: {
+            type: UserType,
+            resolve(parent, args){
+                return User.findById(parent.id_sender)
+            }
+        },
+        date: {type: GraphQLString}
     })
 });
 
@@ -32,13 +39,16 @@ const ConversationType = new GraphQLObjectType({
         messages: {
             type: GraphQLList(MessageType),
             resolve(parent, args) {
-                return Message.find({_id: {$in: parent.messagesIds}})
+                console.log(parent);
+                const messages = Message.find({id_conversation: parent._id});
+                console.log(messages);
+                return messages
             }
         },
         contributors: {
             type: GraphQLList(UserType),
             resolve(parent, args) {
-                return User.find({_id: {$in: parent.conversationsIds}})
+                return User.find({_id: {$in: parent.contributorsIds}})
             }
         }
     })
