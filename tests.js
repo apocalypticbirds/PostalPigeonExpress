@@ -74,6 +74,20 @@ describe('GraphQL', () => {
             })
     })
 
+    it('Create new conversation', (done) => {
+        request.post('/graphql')
+            .send({
+                query: 'mutation { createConversation(name: "Just another conversation", contributorsIds: ["5ca1c9a11c9d4400003e3590", "5ca1ca3c1c9d4400003e3593"]) { id } } '
+            })
+            .expect(200)
+            .end((err,res) => {
+                if (err) return done(err);
+                should.exist(res.body.data.createConversation);
+                should(res.body.data.createConversation).have.property('id');
+                done();
+            })
+    })
+
     // it('update conversation data with id = 5ca1cfae1c9d440000b498b8', (done) => {
     //     request.post('/graphql')
     //         .send({

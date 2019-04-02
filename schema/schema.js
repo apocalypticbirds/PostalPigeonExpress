@@ -39,9 +39,7 @@ const ConversationType = new GraphQLObjectType({
         messages: {
             type: GraphQLList(MessageType),
             resolve(parent, args) {
-                console.log(parent);
                 const messages = Message.find({id_conversation: parent._id});
-                console.log(messages);
                 return messages
             }
         },
@@ -85,6 +83,12 @@ const RootQuery = new GraphQLObjectType({
                 return Conversation.findById(args.id)
             }
         },
+        conversations: {
+            type: GraphQLList(ConversationType),
+            resolve(parent, args) {
+                return Conversation.find({});
+            }
+        },
         users: {
             type: GraphQLList(UserType),
             resolve(parent, args) {
@@ -95,27 +99,44 @@ const RootQuery = new GraphQLObjectType({
 });
 
 const Mutation = new GraphQLObjectType({
-    name: 'Mutation',
-    fields: {
-        sendMessage: {
-            type: MessageType,
-            args: {
-                content: {type: GraphQLNonNull(GraphQLString)},
-                id_conversation:  {type: GraphQLNonNull(GraphQLString)},
-                id_sender: { type: GraphQLNonNull(GraphQLString)}    //temporary until the authorization starts working
-            },
-            resolve(parent, args){
-                const msg = new Message({
-                    id_conversation: args.id_conversation,
-                    id_sender: args.id_sender,
-                    content: args.content,
-                    date: new Date().toISOString()
-                });
-                return msg.save()
-            }
-        }
+  name: "Mutation",
+  fields: {
+    sendMessage: {
+      type: MessageType,
+      args: {
+        content: { type: GraphQLNonNull(GraphQLString) },
+        id_conversation: { type: GraphQLNonNull(GraphQLString) },
+        id_sender: { type: GraphQLNonNull(GraphQLString) } //temporary until the authorization starts working
+      },
+      resolve(parent, args) {
+        const msg = new Message({
+          id_conversation: args.id_conversation,
+          id_sender: args.id_sender,
+          content: args.content,
+          date: new Date().toISOString()
+        });
+        return msg.save();
+      }
+    },
+    createConversation: {
+      type: ConversationType,
+      args: {
+            name: { type: GraphQLNonNull(GraphQLString) },
+            contributorsIds:{type: GraphQLList(GraphQLID)}
+      },
+      resolve(parent, args) {
+          const conversation = new Conversation({
+              name: args.name,
+              contributorsIds: args.contributorsIds
+          }
+          );
+          return conversation.save();
+      }
     }
+  }
 });
+
+
 
 module.exports = new GraphQLSchema({
     query: RootQuery,
