@@ -1,7 +1,8 @@
 const graphql = require('graphql');
 const Message = require('../models/message');
 const User = require('../models/user');
-const Conversation= require('../models/conversation');
+const Conversation = require('../models/conversation');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const {
     GraphQLSchema,
@@ -17,9 +18,15 @@ const {
 const MessageType = new GraphQLObjectType({
     name: 'Message',
     fields: () => ({
-        id_message: {type: GraphQLID},
-        message: {type: GraphQLString},
-        id_sender: {type: GraphQLID}
+        id: {type: GraphQLID},
+        content: {type: GraphQLString},
+        sender: {
+            type: UserType,
+            resolve(parent, args) {
+                return User.findById(parent.id_sender)
+            }
+        },
+        date: {type: GraphQLString}
     })
 });
 
@@ -32,13 +39,14 @@ const ConversationType = new GraphQLObjectType({
         messages: {
             type: GraphQLList(MessageType),
             resolve(parent, args) {
-                return Message.find({_id: {$in: parent.messagesIds}})
+                const messages = Message.find({id_conversation: parent._id});
+                return messages
             }
         },
         contributors: {
             type: GraphQLList(UserType),
             resolve(parent, args) {
-                return User.find({_id: {$in: parent.conversationsIds}})
+                return User.find({_id: {$in: parent.contributorsIds}})
             }
         }
     })
@@ -48,11 +56,11 @@ const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
         id: {type: GraphQLID},
-        username: {type: GraphQLString},
+        nickname: {type: GraphQLString},
         conversation: {
             type: GraphQLList(ConversationType),
             resolve(parent, args) {
-                 return Conversation.find({_id: {$in: parent.conversationsIds}})
+                return Conversation.find({_id: {$in: parent.conversationsIds}})
             }
         }
     })
@@ -60,30 +68,77 @@ const UserType = new GraphQLObjectType({
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQuery',
-    fields:{
+    fields: {
         user: {
             type: UserType,
-            args: { id: {type: GraphQLID}},
-            resolve(parent, args){
+            args: {id: {type: GraphQLID}},
+            resolve(parent, args) {
                 return User.findById(args.id)
             }
         },
         conversation: {
             type: ConversationType,
-            args: { id: {type: GraphQLID}},
-            resolve(parent, args){
+            args: {id: {type: GraphQLID}},
+            resolve(parent, args) {
                 return Conversation.findById(args.id)
+            }
+        },
+        conversations: {
+            type: GraphQLList(ConversationType),
+            resolve(parent, args) {
+                return Conversation.find({});
             }
         },
         users: {
             type: GraphQLList(UserType),
-            resolve(parent, args){
+            resolve(parent, args) {
                 return User.find({});
             }
         }
     }
 });
 
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    sendMessage: {
+      type: MessageType,
+      args: {
+        content: { type: GraphQLNonNull(GraphQLString) },
+        id_conversation: { type: GraphQLNonNull(GraphQLString) },
+        id_sender: { type: GraphQLNonNull(GraphQLString) } //temporary until the authorization starts working
+      },
+      resolve(parent, args) {
+        const msg = new Message({
+          id_conversation: args.id_conversation,
+          id_sender: args.id_sender,
+          content: args.content,
+          date: new Date().toISOString()
+        });
+        return msg.save();
+      }
+    },
+    createConversation: {
+      type: ConversationType,
+      args: {
+            name: { type: GraphQLNonNull(GraphQLString) },
+            contributorsIds:{type: GraphQLList(GraphQLID)}
+      },
+      resolve(parent, args) {
+          const conversation = new Conversation({
+              name: args.name,
+              contributorsIds: args.contributorsIds
+          }
+          );
+          return conversation.save();
+      }
+    }
+  }
+});
+
+
+
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: Mutation,
 });
