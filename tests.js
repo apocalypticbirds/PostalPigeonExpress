@@ -1,8 +1,9 @@
 const chai = require('chai');
 const should = require('should');
 const expect = chai.expect;
-const url = `http://localhost:4000/graphql`;
+const url = `http://localhost:4000`;
 const request = require('supertest')(url);
+const app = require('./app');
 
 
 describe('GraphQL', () => {
@@ -12,7 +13,7 @@ describe('GraphQL', () => {
                 query: '{ user(id: "5ca1c9a11c9d4400003e3590"){ id nickname } } '
             })
             .expect(200)
-            .end((err,res) => {
+            .end((err, res) => {
                 if (err) return done(err);
                 should.exist(res.body.data.user);
                 should(res.body.data.user).have.property('id');
@@ -27,7 +28,7 @@ describe('GraphQL', () => {
                     query: '{ users{ id nickname } } '
                 })
                 .expect(200)
-                .end((err,res) => {
+                .end((err, res) => {
                     if (err) return done(err);
                     should.exist(res.body.data.users);
                     should(res.body.data.users).have.length(2);
@@ -45,7 +46,7 @@ describe('GraphQL', () => {
                 query: '{ conversation(id: "5ca1cfae1c9d440000b498b8"){ id name contributors { id } messages { id content } } }  '
             })
             .expect(200)
-            .end((err,res) => {
+            .end((err, res) => {
                 if (err) return done(err);
                 should.exist(res.body.data.conversation);
                 should(res.body.data.conversation).have.property('id');
@@ -65,7 +66,7 @@ describe('GraphQL', () => {
                 query: 'mutation { sendMessage(content: "Testowa wiadomość", id_conversation: "5ca1cfae1c9d440000b498b8", id_sender: "5ca2575ea5ceed5defdd67c2") { id content } }'
             })
             .expect(200)
-            .end((err,res) => {
+            .end((err, res) => {
                 if (err) return done(err);
                 should.exist(res.body.data.sendMessage);
                 should(res.body.data.sendMessage).have.property('id');
@@ -80,7 +81,7 @@ describe('GraphQL', () => {
                 query: 'mutation { createConversation(name: "Just another conversation", contributorsIds: ["5ca1c9a11c9d4400003e3590", "5ca1ca3c1c9d4400003e3593"]) { id } } '
             })
             .expect(200)
-            .end((err,res) => {
+            .end((err, res) => {
                 if (err) return done(err);
                 should.exist(res.body.data.createConversation);
                 should(res.body.data.createConversation).have.property('id');
@@ -104,5 +105,6 @@ describe('GraphQL', () => {
     //             done();
     //         })
     // });
+    return 0
 });
 
