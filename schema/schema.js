@@ -1,144 +1,51 @@
-const graphql = require('graphql');
-const Message = require('../models/message');
-const User = require('../models/user');
-const Conversation = require('../models/conversation');
-const ObjectId = require('mongoose').Types.ObjectId;
+import {
+    makeExecutableSchema,
+    addMockFunctionsToSchema,
+} from 'graphql-tools';
 
-const {
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLNonNull,
-    GraphQLID,
-    GraphQLInt,
-    GraphQLList,
-} = graphql;
+import {resolvers} from './resolvers';
 
+const typeDefs = `
+type Message {  #final
+    id: ID!
+    content: String
+    sender: User
+    date: String
+}
 
-const MessageType = new GraphQLObjectType({
-    name: 'Message',
-    fields: () => ({
-        id: {type: GraphQLID},
-        content: {type: GraphQLString},
-        sender: {
-            type: UserType,
-            resolve(parent, args) {
-                return User.findById(parent.id_sender)
-            }
-        },
-        date: {type: GraphQLString}
-    })
-});
+type Conversation { #final
+    id: ID!
+    name: String
+    messages: [Message]
+    contributors: [User]
+}
 
+type User { #final
+    id: ID!
+    nickname: String
+    conversations: [Conversation]
+}
 
-const ConversationType = new GraphQLObjectType({
-    name: 'Conversation',
-    fields: () => ({
-        id: {type: GraphQLID},
-        name: {type: GraphQLString},
-        messages: {
-            type: GraphQLList(MessageType),
-            resolve(parent, args) {
-                const messages = Message.find({id_conversation: parent._id});
-                return messages
-            }
-        },
-        contributors: {
-            type: GraphQLList(UserType),
-            resolve(parent, args) {
-                return User.find({_id: {$in: parent.contributorsIds}})
-            }
-        }
-    })
-});
+input MessageInput{
+  id_conversation: ID!
+  content: String
+}
 
-const UserType = new GraphQLObjectType({
-    name: 'User',
-    fields: () => ({
-        id: {type: GraphQLID},
-        nickname: {type: GraphQLString},
-        conversation: {
-            type: GraphQLList(ConversationType),
-            resolve(parent, args) {
-                return Conversation.find({_id: {$in: parent.conversationsIds}})
-            }
-        }
-    })
-});
+type Query {
+  conversation(id: ID!): Conversation
+  conversations: [Conversation]
+}
 
-const RootQuery = new GraphQLObjectType({
-    name: 'RootQuery',
-    fields: {
-        user: {
-            type: UserType,
-            args: {id: {type: GraphQLID}},
-            resolve(parent, args) {
-                return User.findById(args.id)
-            }
-        },
-        conversation: {
-            type: ConversationType,
-            args: {id: {type: GraphQLID}},
-            resolve(parent, args) {
-                return Conversation.findById(args.id)
-            }
-        },
-        conversations: {
-            type: GraphQLList(ConversationType),
-            resolve(parent, args) {
-                return Conversation.find({});
-            }
-        },
-        users: {
-            type: GraphQLList(UserType),
-            resolve(parent, args) {
-                return User.find({});
-            }
-        }
-    }
-});
+type Mutation {
+  addConversation(name: String!): Conversation
+  addMessage(message: MessageInput!): Message
+}
 
-const Mutation = new GraphQLObjectType({
-  name: "Mutation",
-  fields: {
-    sendMessage: {
-      type: MessageType,
-      args: {
-        content: { type: GraphQLNonNull(GraphQLString) },
-        id_conversation: { type: GraphQLNonNull(GraphQLString) },
-        id_sender: { type: GraphQLNonNull(GraphQLString) } //temporary until the authorization starts working
-      },
-      resolve(parent, args) {
-        const msg = new Message({
-          id_conversation: args.id_conversation,
-          id_sender: args.id_sender,
-          content: args.content,
-          date: new Date().toISOString()
-        });
-        return msg.save();
-      }
-    },
-    createConversation: {
-      type: ConversationType,
-      args: {
-            name: { type: GraphQLNonNull(GraphQLString) },
-            contributorsIds:{type: GraphQLList(GraphQLID)}
-      },
-      resolve(parent, args) {
-          const conversation = new Conversation({
-              name: args.name,
-              contributorsIds: args.contributorsIds
-          }
-          );
-          return conversation.save();
-      }
-    }
-  }
-});
+# The subscription root type, specifying what we can subscribe to
+type Subscription {
+  messageAdded(id_conversation: ID!): Message
+}
+`;
 
-
-
-module.exports = new GraphQLSchema({
-    query: RootQuery,
-    mutation: Mutation,
-});
+const schema = makeExecutableSchema({typeDefs, resolvers});
+export {schema};
