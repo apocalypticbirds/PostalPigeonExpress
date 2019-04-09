@@ -4,30 +4,6 @@ import Conversation from './models/conversation'
 import Message from './models/message'
 import User from './models/user'
 
-const conversations = [{
-    id: '1',
-    name: 'soccer',
-    messages: [{
-        id: '1',
-        content: 'soccer is football',
-        sender: 'inneid'
-    }, {
-        id: '2',
-        content: 'hello soccer world cup',
-        sender: 'idsenderafan'
-    }]
-}, {
-    id: '2',
-    name: 'baseball',
-    messages: [{
-        id: '3',
-        content: 'baseball is life',
-    }, {
-        id: '4',
-        content: 'hello baseball world series',
-    }]
-}];
-
 
 let nextId = 3;
 let nextMessageId = 5;
@@ -46,19 +22,17 @@ export const resolvers = {
     },
     Mutation: {
         addConversation: (root, args) => {
-            const newConversation = {id: String(nextId++), messages: [], name: args.name};
-            conversations.push(newConversation);
-            return newConversation;
+            const conv = new Conversation({name: args.name, contributorsIds: []});
+            return conv.save();
         },
         addMessage: (root, {message}) => {
-            const conversation = conversations
-                .find(conversation => conversation.id === message.id_conversation);
-            const newMessage = {id: String(nextMessageId++), content: message.content};
-            conversation.messages.push(newMessage);
-            pubsub.publish(
-                'messageAdded',
-                {messageAdded: newMessage, id_conversation: message.id_conversation});
-            return newMessage;
+            const mssg = new Message({
+                id_conversation: message.id_conversation,
+                id_sender: message.id_sender,
+                content: message.content,
+                date: new Date().toISOString()
+            });
+            return mssg.save();
         }
     },
     Subscription: {
