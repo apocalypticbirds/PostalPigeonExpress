@@ -55,10 +55,16 @@ const pubsub = new PubSub();
 
 export const resolvers = {
     Query: {
-        conversation: (root, {id}) => {
+        conversation: (root, {id}, req) => {
+            if (!req.isAuth) {
+                throw new Error('Unauthenticated!');
+            }
             return conversations.find(conversation => conversation.id === id)
         },
-        conversations: () => {
+        conversations: (root, args, req) => {
+            if (!req.isAuth) {
+                throw new Error('Unauthenticated!');
+            }
             return conversations
         },
         login: (root, args) => {
@@ -81,12 +87,18 @@ export const resolvers = {
         }
     },
     Mutation: {
-        addConversation: (root, args) => {
+        addConversation: (root, args, req) => {
+            if (!req.isAuth) {
+                throw new Error('Unauthenticated!');
+            }
             const newConversation = {id: String(nextId++), messages: [], name: args.name};
             conversations.push(newConversation);
             return newConversation;
         },
-        addMessage: (root, {message}) => {
+        addMessage: (root, {message}, req) => {
+            if (!req.isAuth) {
+                throw new Error('Unauthenticated!');
+            }
             const conversation = conversations
                 .find(conversation => conversation.id === message.id_conversation);
             const newMessage = {id: String(nextMessageId++), content: message.content};
@@ -105,3 +117,15 @@ export const resolvers = {
         },
     },
 };
+
+
+/*
+======Test requests for postman=====
+{
+	"query": "query {login(email:\"bartek@gmail.com\", password:\"passw0rd\") {token}}"
+}
+
+{
+	"query": "query {conversations {id, name}}"
+}
+*/

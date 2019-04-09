@@ -13,6 +13,8 @@ import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
+const isAuth = require('./middleware/is-auth');
+
 mongoose.connect('mongodb+srv://user1:ZZQLuMDv5dOJEEmB@cluster0-jhmtv.mongodb.net/postalpigeon?retryWrites=true');
 mongoose.connection.once('open', () => {
   console.log('Connected to Mongo')
@@ -22,11 +24,14 @@ mongoose.connection.once('open', () => {
 const PORT = 4000;
 const server = express();
 
+
 server.use('*', cors({ origin: 'http://localhost:3000' }));
 
-server.use('/graphql', bodyParser.json(), graphqlExpress({
-  schema
-}));
+server.use(isAuth);
+server.use('/graphql', bodyParser.json(), graphqlExpress(req => ({
+  schema,
+  context: req
+})));
 
 server.use('/graphiql', graphiqlExpress({
   endpointURL: '/graphql',
