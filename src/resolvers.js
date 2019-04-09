@@ -1,5 +1,8 @@
 import {PubSub} from 'graphql-subscriptions';
 import {withFilter} from 'graphql-subscriptions';
+import Conversation from './models/conversation'
+import Message from './models/message'
+import User from './models/user'
 
 const conversations = [{
     id: '1',
@@ -34,10 +37,11 @@ const pubsub = new PubSub();
 export const resolvers = {
     Query: {
         conversation: (root, {id}) => {
-            return conversations.find(conversation => conversation.id === id)
+            return Conversation.findById(id);
+            // return conversations.find(conversation => conversation.id === id)
         },
         conversations: () => {
-            return conversations
+            return Conversation.find({})
         }
     },
     Mutation: {
@@ -64,4 +68,12 @@ export const resolvers = {
             }),
         },
     },
+    Conversation: {
+        messages(parent, args, ctx, info) {
+            return Message.find({id_conversation: {$in: parent.id}})
+        },
+        contributors(parent, args, ctx, info) {
+            return User.find({_id: {$in: parent.contributorsIds}})
+        }
+    }
 };

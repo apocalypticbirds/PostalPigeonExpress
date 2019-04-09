@@ -30,7 +30,6 @@ server.use('/graphql', bodyParser.json(), graphqlExpress({
 
 server.use('/graphiql', graphiqlExpress({
   endpointURL: '/graphql',
-  graphiql: true,
   subscriptionsEndpoint: `ws://localhost:4000/subscriptions`
 }));
 

@@ -28,7 +28,8 @@ type User { #final
 
 input MessageInput{
   id_conversation: ID!
-  content: String
+  content: String!
+  id_sender: String!
 }
 
 type Query {
