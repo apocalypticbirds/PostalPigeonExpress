@@ -32,6 +32,10 @@ export const resolvers = {
                 content: message.content,
                 date: new Date().toISOString()
             });
+            pubsub.publish(
+                'messageAdded',
+                {messageAdded: mssg, id_conversation: message.id_conversation}
+            );
             return mssg.save();
         }
     },
