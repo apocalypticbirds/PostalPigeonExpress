@@ -12,21 +12,12 @@ To run tests type:
 
 `npm test`
 
-To run nodemon mode:
-
-`nodemon app`
-
-_Nodemon allow you to automaticly restart server on changes_
-
-
-
 _Warning! You should install npm to run this app_
 
 
-Possible backend request
+## Possible backend request
 
-Add conversation:
-
+### Add conversation:
 `mutation{
   addConversation(name: "Gently conversation"){
     id
@@ -34,8 +25,7 @@ Add conversation:
   }
 }`
 
-Get conversation:
-
+### Get conversation:
 `{
   conversation(id: "5ca387903805a07cd4526d77") {
     id
@@ -52,8 +42,7 @@ Get conversation:
   }
 }`
 
-Get conversations:
-
+### Get conversations:
 `{
   conversations{
     id
@@ -65,17 +54,14 @@ Get conversations:
   }
 }`
 
-Send message:
-
+### Send message:
 `mutation($message: MessageInput!){
   addMessage(message: $message){
 		content
     id
   }
 }`
-
-with variables:
-
+### with variables:
 `{
   "message": {
     "id_conversation": "5ca387903805a07cd4526d77",
