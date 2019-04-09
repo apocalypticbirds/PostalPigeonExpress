@@ -26,6 +26,12 @@ type User { #final
     conversations: [Conversation]
 }
 
+type AuthData {
+  userId: ID!
+  token: String!
+  tokenExpiration: Int!
+}
+
 input MessageInput{
   id_conversation: ID!
   content: String
@@ -34,6 +40,7 @@ input MessageInput{
 type Query {
   conversation(id: ID!): Conversation
   conversations: [Conversation]
+  login(email: String!, password: String!): AuthData!
 }
 
 type Mutation {
