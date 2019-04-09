@@ -71,3 +71,16 @@ _Warning! You should install npm to run this app_
 }`
 
 
+### Sprint V4 9.04.2019
+
+- Change backend configuration to ES6 JS standard
+- Add subscription server based on WebSockets
+- Rebuild schema to new qgl format
+- Move resolvers to another file and rebuild
+- Add subscriptions
+- Add login endpoint
+- Add user authorisation to all endpoints
+- Add middleware for auth purposes
+- Add context parameter which is sent to resolvers (for auth)
+
+  
