@@ -71,6 +71,14 @@ _Warning! You should install npm to run this app_
 }`
 
 
+### Subscribe to message in conversation
+`subscription{
+        messageAdded(id_conversation: "5ca1cfae1c9d440000b498b8"){
+            id
+            content
+        }
+    }`
+
 ### Sprint V4 9.04.2019
 
 - Change backend configuration to ES6 JS standard
