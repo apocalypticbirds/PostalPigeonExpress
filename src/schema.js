@@ -5,6 +5,15 @@ import {
 
 import {resolvers} from './resolvers';
 
+// type Conversation { #final
+//     id: ID!
+//     name: String
+//     messages: [Message]
+//     contributors: [User]
+// }
+
+// addAdvert(advert: AdvertInput!): Advert
+
 const typeDefs = `
 type Message {  #final
     id: ID!
@@ -13,17 +22,28 @@ type Message {  #final
     date: String
 }
 
-type Conversation { #final
-    id: ID!
-    name: String
-    messages: [Message]
-    contributors: [User]
-}
-
 type User { #final
     id: ID!
     nickname: String
     conversations: [Conversation]
+}
+
+type Conversation { #final
+    id: ID
+    name: String
+    description: String
+    tags: [String]
+    messages: [Message]
+    avatar: String
+    contributors: [User]
+}
+
+input ConversationInput { #final
+    name: String!
+    description: String
+    tags: [String]
+    avatar: String
+    contributorsIds: [String]!
 }
 
 input MessageInput{
@@ -32,13 +52,19 @@ input MessageInput{
   id_sender: String!
 }
 
+input SearchConversation{
+    name: String!
+    tags: [String]
+}
+
 type Query {
   conversation(id: ID!): Conversation
+  searchConversation(search: SearchConversation!): [Conversation]
   conversations: [Conversation]
 }
 
 type Mutation {
-  addConversation(name: String!): Conversation
+  addConversation(conversation: ConversationInput!): Conversation
   addMessage(message: MessageInput!): Message
 }
 

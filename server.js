@@ -19,10 +19,12 @@ mongoose.connection.once('open', () => {
 });
 
 
-const PORT = 4000;
+const PORT = 4050;
 const server = express();
 
-server.use('*', cors({ origin: 'http://localhost:3000' }));
+// server.use('*', cors({ origin: 'http://localhost:3001' }));
+// server.use('*', cors({ origin: '*' }));
+server.use(cors());
 
 server.use('/graphql', bodyParser.json(), graphqlExpress({
   schema
@@ -30,7 +32,7 @@ server.use('/graphql', bodyParser.json(), graphqlExpress({
 
 server.use('/graphiql', graphiqlExpress({
   endpointURL: '/graphql',
-  subscriptionsEndpoint: `ws://localhost:4000/subscriptions`
+  subscriptionsEndpoint: `ws://localhost:4050/subscriptions`
 }));
 
 // We wrap the express server so that we can attach the WebSocket for subscriptions
