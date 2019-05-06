@@ -5,61 +5,52 @@ import Conversation from './models/conversation'
 import Message from './models/message'
 import User from './models/user'
 
-const conversations = [{
-    id: '1',
-    name: 'soccer',
-    messages: [{
-        id: '1',
-        content: 'soccer is football',
-        sender: 'inneid'
-    }, {
-        id: '2',
-        content: 'hello soccer world cup',
-        sender: 'idsenderafan'
-    }]
-}, {
-    id: '2',
-    name: 'baseball',
-    messages: [{
-        id: '3',
-        content: 'baseball is life',
-    }, {
-        id: '4',
-        content: 'hello baseball world series',
-    }]
-}];
-
-
-let nextId = 3;
-let nextMessageId = 5;
-
 const pubsub = new PubSub();
 
 export const resolvers = {
     Query: {
-        conversation: (root, {id}) => {
+        conversation: (root, {id}, req) => {
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
             return Conversation.findById(id);
             // return conversations.find(conversation => conversation.id === id)
         },
-        me: (root, {id_user}) => {
-            return User.findById(id_user);
+        me: (root, args, req) => {
+            console.log(req.userId);
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
+            return User.findById(req.userId);
         },
-        conversations: () => {
+        conversations: (root, args, req) => {
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
             return Conversation.find({})
         },
-        users: () => {
-            return User.find({})
-        login: (root, args) => {
+        users: (root, args, req) => {
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
+            return User.find({});
+        },
+        login: async (root, {email, password}) => {
             //here should be DB request to check if user exist in DB
-            const user = users.find(user => user.email == args.email);
-            //const user = await User.findOne({email: email});
+            // const user = User.findById("5ca1ca3c1c9d4400003e3593");
+            const user = await User.findOne({nickname: "Dima"});
+            // return Message.find({id_conversation: {$in: parent.id}})
+            if (!user) {
                 throw new Error('User does not exist!');
             }
-            if(!user){
+
             //const isEqualPassword = await bcrypt.compare(password, user.password);
             //here should be used bcrypt which can compare plant password to hash password from DB
-            const isEqualPassword = args.password == user.password;
-            if(!isEqualPassword){
+            const isEqualPassword = password === user.password;
+            console.log(`UserID: ${user.model._id}`);
+            console.log(`Nickname: ${user.nickname}`);
+            console.log(`${password} vs ${user.password}`);
+            if (!isEqualPassword) {
                 throw new Error('Password is incorrect!');
             }
             const token = jwt.sign({userId: user._id}, 'somesupersecretkey', {
@@ -69,11 +60,17 @@ export const resolvers = {
         }
     },
     Mutation: {
-        addConversation: (root, args) => {
+        addConversation: (root, args, req) => {
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
             const conv = new Conversation({name: args.name, contributorsIds: []});
             return conv.save();
         },
-        addMessage: (root, {id_conversation, content, id_sender}) => {
+        addMessage: (root, {id_conversation, content, id_sender}, req) => {
+            if (!req.isAuth){
+                throw new Error("Unauthenticated");
+            }
             const mssg = new Message({
                 id_conversation: id_conversation,
                 id_sender: id_sender,
@@ -98,7 +95,8 @@ export const resolvers = {
         messages(parent, args, ctx, info) {
             return Message.find({id_conversation: {$in: parent.id}})
         },
-        contributors(parent, args, ctx, info) {
+        contributors
+            (parent, args, ctx, info) {
             return User.find({_id: {$in: parent.contributorsIds}})
         }
     },
@@ -106,7 +104,8 @@ export const resolvers = {
         conversations(parent, args, ctx, info) {
             return Conversation.find({_id: {$in: parent.conversationsIds}})
         }
-    },
+    }
+    ,
     Message: {
         sender(parent, args, ctx, info) {
             return User.findById(parent.id_sender)

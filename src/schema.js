@@ -24,6 +24,7 @@ type Conversation { #final
 type User { #final
     id: ID!
     nickname: String
+    email: String!
     conversations: [Conversation]
 }
 
@@ -41,7 +42,7 @@ input MessageInput{
 
 type Query {
   conversation(id: ID!): Conversation
-  me(id_user: ID!): User
+  me: User
   conversations: [Conversation]
   login(email: String!, password: String!): AuthData!
   users: [User]
