@@ -35,3 +35,13 @@ const findTags = (message) => {
 
     return message;
 };
+
+//This method hide profanities in message
+//docs https://www.npmjs.com/package/bad-words
+export const hideProfanities = (message) => {
+    let Filter = require('bad-words'),
+        filter = new Filter();
+
+    message.content = filter.clean(message.content);
+    return message;
+};
