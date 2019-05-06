@@ -1,6 +1,9 @@
 import {PubSub} from 'graphql-subscriptions';
 import {withFilter} from 'graphql-subscriptions';
 import jwt from 'jsonwebtoken';
+import Conversation from './models/conversation'
+import Message from './models/message'
+import User from './models/user'
 
 const conversations = [{
     id: '1',
@@ -26,27 +29,6 @@ const conversations = [{
     }]
 }];
 
-const users = [
-  {
-    _id: "5ca1c9a11c9d4400003e3590",
-    nickname: "Monteth",
-    first_name: "Jan",
-    last_name: "Kowalski",
-    email: "monteth@gmail.com",
-    password: "tralala", 
-    conversationsIds: ["5c98f6721c9d440000626e2e"]
-  },
-  {
-    _id: "5ca1ca3c1c9d4400003e3593",
-    nickname: "Dima",
-    first_name: "Bartosz",
-    last_name: "Jakubowicz",
-    email:"bartek@gmail.com",
-    password: "passw0rd",
-    conversationsIds: ["5c98f6721c9d440000626e2e"]
-  }
-];
-
 
 let nextId = 3;
 let nextMessageId = 5;
@@ -55,27 +37,27 @@ const pubsub = new PubSub();
 
 export const resolvers = {
     Query: {
-        conversation: (root, {id}, req) => {
-            if (!req.isAuth) {
-                throw new Error('Unauthenticated!');
-            }
-            return conversations.find(conversation => conversation.id === id)
+        conversation: (root, {id}) => {
+            return Conversation.findById(id);
+            // return conversations.find(conversation => conversation.id === id)
         },
-        conversations: (root, args, req) => {
-            if (!req.isAuth) {
-                throw new Error('Unauthenticated!');
-            }
-            return conversations
+        me: (root, {id_user}) => {
+            return User.findById(id_user);
         },
+        conversations: () => {
+            return Conversation.find({})
+        },
+        users: () => {
+            return User.find({})
         login: (root, args) => {
             //here should be DB request to check if user exist in DB
-            //const user = await User.findOne({email: email});
             const user = users.find(user => user.email == args.email);
-            if(!user){
+            //const user = await User.findOne({email: email});
                 throw new Error('User does not exist!');
             }
-            //here should be used bcrypt which can compare plant password to hash password from DB
+            if(!user){
             //const isEqualPassword = await bcrypt.compare(password, user.password);
+            //here should be used bcrypt which can compare plant password to hash password from DB
             const isEqualPassword = args.password == user.password;
             if(!isEqualPassword){
                 throw new Error('Password is incorrect!');
@@ -87,26 +69,22 @@ export const resolvers = {
         }
     },
     Mutation: {
-        addConversation: (root, args, req) => {
-            if (!req.isAuth) {
-                throw new Error('Unauthenticated!');
-            }
-            const newConversation = {id: String(nextId++), messages: [], name: args.name};
-            conversations.push(newConversation);
-            return newConversation;
+        addConversation: (root, args) => {
+            const conv = new Conversation({name: args.name, contributorsIds: []});
+            return conv.save();
         },
-        addMessage: (root, {message}, req) => {
-            if (!req.isAuth) {
-                throw new Error('Unauthenticated!');
-            }
-            const conversation = conversations
-                .find(conversation => conversation.id === message.id_conversation);
-            const newMessage = {id: String(nextMessageId++), content: message.content};
-            conversation.messages.push(newMessage);
+        addMessage: (root, {id_conversation, content, id_sender}) => {
+            const mssg = new Message({
+                id_conversation: id_conversation,
+                id_sender: id_sender,
+                content: content,
+                date: new Date().toISOString()
+            });
             pubsub.publish(
                 'messageAdded',
-                {messageAdded: newMessage, id_conversation: message.id_conversation});
-            return newMessage;
+                {messageAdded: mssg, id_conversation: id_conversation}
+            );
+            return mssg.save();
         }
     },
     Subscription: {
@@ -116,6 +94,24 @@ export const resolvers = {
             }),
         },
     },
+    Conversation: {
+        messages(parent, args, ctx, info) {
+            return Message.find({id_conversation: {$in: parent.id}})
+        },
+        contributors(parent, args, ctx, info) {
+            return User.find({_id: {$in: parent.contributorsIds}})
+        }
+    },
+    User: {
+        conversations(parent, args, ctx, info) {
+            return Conversation.find({_id: {$in: parent.conversationsIds}})
+        }
+    },
+    Message: {
+        sender(parent, args, ctx, info) {
+            return User.findById(parent.id_sender)
+        }
+    }
 };
 
 

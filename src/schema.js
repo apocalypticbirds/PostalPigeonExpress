@@ -18,6 +18,7 @@ type Conversation { #final
     name: String
     messages: [Message]
     contributors: [User]
+    avatarUrl: String
 }
 
 type User { #final
@@ -34,18 +35,21 @@ type AuthData {
 
 input MessageInput{
   id_conversation: ID!
-  content: String
+  content: String!
+  id_sender: ID!
 }
 
 type Query {
   conversation(id: ID!): Conversation
+  me(id_user: ID!): User
   conversations: [Conversation]
   login(email: String!, password: String!): AuthData!
+  users: [User]
 }
 
 type Mutation {
   addConversation(name: String!): Conversation
-  addMessage(message: MessageInput!): Message
+  addMessage(id_conversation: ID!, content: String!, id_sender: ID!): Message
 }
 
 # The subscription root type, specifying what we can subscribe to
