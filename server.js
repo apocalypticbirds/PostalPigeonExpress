@@ -24,7 +24,7 @@ mongoose.connection.once('open', () => {
 const PORT = 4000;
 const server = express();
 
-
+//Czemu tutaj jest port 3000 a serwer się uruchamia na 4000??
 server.use('*', cors({ origin: 'http://localhost:3000' }));
 
 server.use(isAuth);
