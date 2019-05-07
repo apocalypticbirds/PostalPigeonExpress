@@ -5,7 +5,9 @@ import Conversation from './models/conversation'
 import Message from './models/message'
 import User from './models/user'
 
+const SECRET = 'somesupersecretkey';
 const pubsub = new PubSub();
+
 
 export const resolvers = {
     Query: {
@@ -17,7 +19,6 @@ export const resolvers = {
             // return conversations.find(conversation => conversation.id === id)
         },
         me: (root, args, req) => {
-            console.log(req.userId);
             if (!req.isAuth){
                 throw new Error("Unauthenticated");
             }
@@ -47,13 +48,13 @@ export const resolvers = {
             //const isEqualPassword = await bcrypt.compare(password, user.password);
             //here should be used bcrypt which can compare plant password to hash password from DB
             const isEqualPassword = password === user.password;
-            console.log(`UserID: ${user.model._id}`);
-            console.log(`Nickname: ${user.nickname}`);
-            console.log(`${password} vs ${user.password}`);
+            // console.log(`UserID: ${user.model._id}`);
+            // console.log(`Nickname: ${user.nickname}`);
+            // console.log(`${password} vs ${user.password}`);
             if (!isEqualPassword) {
                 throw new Error('Password is incorrect!');
             }
-            const token = jwt.sign({userId: user._id}, 'somesupersecretkey', {
+            const token = jwt.sign({userId: user._id}, SECRET, {
                 expiresIn: '1h'
             });
             return {userId: user._id, token: token, tokenExpiration: 1};
@@ -64,16 +65,16 @@ export const resolvers = {
             if (!req.isAuth){
                 throw new Error("Unauthenticated");
             }
-            const conv = new Conversation({name: args.name, contributorsIds: []});
+            const conv = new Conversation({name: args.name, contributorsIds: [req.userId]});
             return conv.save();
         },
-        addMessage: (root, {id_conversation, content, id_sender}, req) => {
+        addMessage: (root, {id_conversation, content}, req) => {
             if (!req.isAuth){
                 throw new Error("Unauthenticated");
             }
             const mssg = new Message({
                 id_conversation: id_conversation,
-                id_sender: id_sender,
+                id_sender: req.userId,
                 content: content,
                 date: new Date().toISOString()
             });
