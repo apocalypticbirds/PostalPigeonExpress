@@ -71,12 +71,20 @@ export const resolvers = {
             if (!req.isAuth){
                 throw new Error("Unauthenticated");
             }
-            const mssg = new Message({
+            //changed from const to let
+            let mssg = new Message({
                 id_conversation: id_conversation,
                 id_sender: req.userId,
                 content: content,
+                tags:[],
                 date: new Date().toISOString()
             });
+
+            //here is a bot
+            const bot = require('./bot/bot');
+            mssg = bot.hideProfanities(mssg);
+            mssg = bot.findTags(mssg);
+
             pubsub.publish(
                 'messageAdded',
                 {messageAdded: mssg, id_conversation: id_conversation}

@@ -11,9 +11,10 @@
 }*/
 
 //This method searching '#' symbols, read text after it until meet ' ' or next '#'
-const findTags = (message) => {
+export const findTags = (message) => {
     let tag = "";
     let isTag = false;
+    let endContent = '';
     for(let letter of message.content){
         //reading chars for tag
         if(isTag){
@@ -28,10 +29,14 @@ const findTags = (message) => {
         if(letter === "#"){
             isTag = !isTag;
         }
+        if(!isTag)
+            endContent += letter;
     }
 
     if(tag !=="")
         message.tags.push(tag);
+
+    message.content = endContent;
 
     return message;
 };
