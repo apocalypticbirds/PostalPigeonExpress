@@ -10,6 +10,7 @@ type Message {  #final
     id: ID!
     content: String
     sender: User
+    tags: [String]
     date: String
 }
 
