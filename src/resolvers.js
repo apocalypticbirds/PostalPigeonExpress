@@ -39,16 +39,15 @@ export const resolvers = {
         login: async (root, {email, password}) => {
             //here should be DB request to check if user exist in DB
             // const user = User.findById("5ca1ca3c1c9d4400003e3593");
-            const user = await User.findOne({nickname: "Dima"});
+            const user = await User.findOne({email: email});
             // return Message.find({id_conversation: {$in: parent.id}})
             if (!user) {
                 throw new Error('User does not exist!');
             }
-
             //const isEqualPassword = await bcrypt.compare(password, user.password);
             //here should be used bcrypt which can compare plant password to hash password from DB
             const isEqualPassword = password === user.password;
-            // console.log(`UserID: ${user.model._id}`);
+            // console.log(`UserID: ${user._id}`);
             // console.log(`Nickname: ${user.nickname}`);
             // console.log(`${password} vs ${user.password}`);
             if (!isEqualPassword) {
@@ -82,6 +81,7 @@ export const resolvers = {
                 'messageAdded',
                 {messageAdded: mssg, id_conversation: id_conversation}
             );
+            console.log(`User ${req.userId} send message ${content}`);
             return mssg.save();
         }
     },

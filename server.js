@@ -25,6 +25,7 @@ const PORT = 4000;
 const server = express();
 
 //Czemu tutaj jest port 3000 a serwer się uruchamia na 4000??
+//CORS służy do ochrony przed dostępem z nieautoryzowanych stron
 server.use('*', cors({ origin: 'http://localhost:3000' }));
 
 server.use(isAuth);
