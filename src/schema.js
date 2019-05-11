@@ -51,6 +51,7 @@ type Query {
 
 type Mutation {
   addConversation(name: String!): Conversation
+  addUserToConv(id_conv: ID!, id_user: ID!): Conversation
   addMessage(id_conversation: ID!, content: String!): Message
 }
 
