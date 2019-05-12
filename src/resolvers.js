@@ -86,6 +86,22 @@ export const resolvers = {
             }
             return null;
         },
+
+        addUsernameToConv: async (root, {nickname, id_conv}, req) => {
+            if (!req.isAuth) {
+                throw new Error("Unauthenticated");
+            }
+            const applicant = await User.findById(req.userId);
+            if (applicant.conversationsIds.includes(id_conv)){
+                const newUser = await User.findOne({nickname: nickname});
+                const conv = await Conversation.findById(id_conv);
+                newUser.conversationsIds.push(id_conv);
+                conv.contributorsIds.push(newUser._id);
+                newUser.save();
+                return conv.save();
+            }
+            return null;
+        },
         addMessage: (root, {id_conversation, content}, req) => {
             if (!req.isAuth){
                 throw new Error("Unauthenticated");
