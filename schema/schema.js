@@ -52,6 +52,15 @@ const ConversationType = new GraphQLObjectType({
     })
 });
 
+const AuthData = new GraphQLObjectType({
+    name: 'AuthData',
+    fields: () => ({
+        userId: {type: GraphQLID},
+        token: {type: GraphQLString},
+        tokenExpiration: {type: GraphQLInt}
+    })
+});
+
 const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
@@ -94,9 +103,19 @@ const RootQuery = new GraphQLObjectType({
             resolve(parent, args) {
                 return User.find({});
             }
+        },
+        login:{
+            type:GraphQLList(AuthData),
+            resolve(parent, args){
+                return W
+            }
         }
     }
 });
+
+/*type RootQuery{
+    login(email: String!, password: String!):
+}*/
 
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
@@ -122,7 +141,7 @@ const Mutation = new GraphQLObjectType({
       type: ConversationType,
       args: {
             name: { type: GraphQLNonNull(GraphQLString) },
-            contributorsIds:{type: GraphQLList(GraphQLID)}
+            contributorsIds:{type: GraphQLList(GraphQLID)} 
       },
       resolve(parent, args) {
           const conversation = new Conversation({
@@ -131,7 +150,21 @@ const Mutation = new GraphQLObjectType({
           }
           );
           return conversation.save();
-      }
+      }   
+    },
+    //does not work
+    updateConversation: {
+        type: ConversationType,
+        args: {
+            id: {type: GraphQLNonNull(GraphQLID)},
+            name: {type: GraphQLString},
+            contributorsIds: {type: GraphQLList(GraphQLString)}
+        },
+        async resolve(parent, args) {
+            let doc = Conversation.findById(args.id);
+            doc.name = args.name;
+            await doc.save();
+        }
     }
   }
 });

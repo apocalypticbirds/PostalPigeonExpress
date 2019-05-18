@@ -1,33 +1,33 @@
 {
-  "name": "backend",
+  "name": "PostalPigeonExpress",
   "version": "1.0.0",
-  "description": "backend app for postalpigeon web service",
-  "main": "index.js",
+  "description": "",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "mocha --timeout 20000 ./tests"
+    "start": "nodemon ./server.js --exec babel-node -e js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "D&K",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^4.16.4",
-    "express-graphql": "^0.7.1",
-    "graphql": "^14.1.1",
-    "cors": "^2.8.5",
-    "mongoose": "^5.4.20",
-    "supertest": "^4.0.2",
-    "should": "latest"
-  },
+  "author": "Konrad & Dmytro ",
+  "license": "MIT",
   "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^6.0.2"
+    "babel-cli": "^6.24.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "nodemon": "^1.11.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/apocalipticbirds/PostalPigeonExpress.git"
-  },
-  "bugs": {
-    "url": "https://github.com/apocalipticbirds/PostalPigeonExpress/issues"
-  },
-  "homepage": "https://github.com/apocalipticbirds/PostalPigeonExpress#readme"
+  "dependencies": {
+    "bad-words": "^3.0.2",
+    "body-parser": "^1.17.1",
+    "cors": "^2.8.3",
+    "express": "^4.15.2",
+    "graphql": "^0.10.1",
+    "graphql-server-core": "^0.8.2",
+    "graphql-server-express": "^0.8.2",
+    "graphql-server-module-graphiql": "^0.8.2",
+    "graphql-subscriptions": "^0.4.3",
+    "graphql-tools": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.5.0",
+    "subscriptions-transport-ws": "^0.7.3"
+  }
 }
