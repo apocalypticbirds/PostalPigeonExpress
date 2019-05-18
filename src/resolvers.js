@@ -1,5 +1,5 @@
-import {PubSub} from 'graphql-subscriptions';
-import {withFilter} from 'graphql-subscriptions';
+import { PubSub } from 'graphql-subscriptions';
+import { withFilter } from 'graphql-subscriptions';
 import jwt from 'jsonwebtoken';
 import Conversation from './models/conversation'
 import Message from './models/message'
@@ -11,35 +11,35 @@ const pubsub = new PubSub();
 
 export const resolvers = {
     Query: {
-        conversation: (root, {id}, req) => {
-            if (!req.isAuth){
+        conversation: async (root, { id }, req) => {
+            if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
-            return Conversation.findById(id);
+            return await Conversation.findById(id);
             // return conversations.find(conversation => conversation.id === id)
         },
         me: (root, args, req) => {
-            if (!req.isAuth){
+            if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             return User.findById(req.userId);
         },
         conversations: (root, args, req) => {
-            if (!req.isAuth){
+            if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             return Conversation.find({})
         },
         users: (root, args, req) => {
-            if (!req.isAuth){
+            if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             return User.find({});
         },
-        login: async (root, {email, password}) => {
+        login: async (root, { email, password }) => {
             //here should be DB request to check if user exist in DB
             // const user = User.findById("5ca1ca3c1c9d4400003e3593");
-            const user = await User.findOne({email: email});
+            const user = await User.findOne({ email: email });
             // return Message.find({id_conversation: {$in: parent.id}})
             if (!user) {
                 throw new Error('User does not exist!');
@@ -53,10 +53,10 @@ export const resolvers = {
             if (!isEqualPassword) {
                 throw new Error('Password is incorrect!');
             }
-            const token = jwt.sign({userId: user._id}, SECRET, {
+            const token = jwt.sign({ userId: user._id }, SECRET, {
                 expiresIn: '1h'
             });
-            return {userId: user._id, token: token, tokenExpiration: 1};
+            return { userId: user._id, token: token, tokenExpiration: 1 };
         }
     },
     Mutation: {
@@ -64,19 +64,19 @@ export const resolvers = {
             if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
-            const conv = new Conversation({name: args.name, contributorsIds: [req.userId]});
+            const conv = new Conversation({ name: args.name, contributorsIds: [req.userId] });
             const convId = conv._id;
             const user = await User.findById(req.userId);
             user.conversationsIds.push(convId);
             user.save();
             return conv.save();
         },
-        addUserToConv: async (root, {id_conv, id_user}, req) => {
+        addUserToConv: async (root, { id_conv, id_user }, req) => {
             if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             const applicant = await User.findById(req.userId);
-            if (applicant.conversationsIds.includes(id_conv)){
+            if (applicant.conversationsIds.includes(id_conv)) {
                 const newUser = await User.findById(id_user);
                 const conv = await Conversation.findById(id_conv);
                 newUser.conversationsIds.push(id_conv);
@@ -87,13 +87,13 @@ export const resolvers = {
             return null;
         },
 
-        addUsernameToConv: async (root, {nickname, id_conv}, req) => {
+        addUsernameToConv: async (root, { nickname, id_conv }, req) => {
             if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             const applicant = await User.findById(req.userId);
-            if (applicant.conversationsIds.includes(id_conv)){
-                const newUser = await User.findOne({nickname: nickname});
+            if (applicant.conversationsIds.includes(id_conv)) {
+                const newUser = await User.findOne({ nickname: nickname });
                 const conv = await Conversation.findById(id_conv);
                 newUser.conversationsIds.push(id_conv);
                 conv.contributorsIds.push(newUser._id);
@@ -102,8 +102,8 @@ export const resolvers = {
             }
             return null;
         },
-        addMessage: (root, {id_conversation, content}, req) => {
-            if (!req.isAuth){
+        addMessage: (root, { id_conversation, content }, req) => {
+            if (!req.isAuth) {
                 throw new Error("Unauthenticated");
             }
             //changed from const to let
@@ -111,7 +111,7 @@ export const resolvers = {
                 id_conversation: id_conversation,
                 id_sender: req.userId,
                 content: content,
-                tags:[],
+                tags: [],
                 date: new Date().toISOString()
             });
 
@@ -122,7 +122,7 @@ export const resolvers = {
 
             pubsub.publish(
                 'messageAdded',
-                {messageAdded: mssg, id_conversation: id_conversation}
+                { messageAdded: mssg, id_conversation: id_conversation }
             );
             console.log(`User ${req.userId} send message ${content}`);
             return mssg.save();
@@ -136,17 +136,18 @@ export const resolvers = {
         },
     },
     Conversation: {
-        messages(parent, args, ctx, info) {
-            return Message.find({id_conversation: {$in: parent.id}})
+        async messages(parent, args, ctx, info) {
+            const result = await Message.find({ id_conversation: { $in: parent.id } }).sort({ date: 'desc' }).limit(30);
+            return result.reverse();
         },
-        contributors
+        async contributors
             (parent, args, ctx, info) {
-            return User.find({_id: {$in: parent.contributorsIds}})
+            return await User.find({ _id: { $in: parent.contributorsIds } })
         }
     },
     User: {
         conversations(parent, args, ctx, info) {
-            return Conversation.find({_id: {$in: parent.conversationsIds}})
+            return Conversation.find({ _id: { $in: parent.conversationsIds } })
         }
     }
     ,
