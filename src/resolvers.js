@@ -71,6 +71,14 @@ export const resolvers = {
             user.save();
             return conv.save();
         },
+        leaveConversation: async (root, { id_conv }, req) => {
+            const conv = await Conversation.findById(id_conv);
+            const user = await User.findById(req.userId);
+            conv.contributorsIds = conv.contributorsIds.filter(id => id !== req.userId);
+            user.conversationsIds = user.conversationsIds.filter(id => id !== id_conv);
+            user.save();
+            return conv.save();
+        },
         addUserToConv: async (root, { id_conv, id_user }, req) => {
             if (!req.isAuth) {
                 throw new Error("Unauthenticated");
