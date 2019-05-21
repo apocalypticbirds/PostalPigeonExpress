@@ -54,6 +54,7 @@ type Mutation {
   addUserToConv(id_conv: ID!, id_user: ID!): Conversation
   addUsernameToConv(id_conv: ID!, nickname: String!): Conversation
   addMessage(id_conversation: ID!, content: String!): Message
+  addUser(email: String!, password: String!, nickname: String!): User
   leaveConversation(id_conv: ID!): Conversation
 }
 
