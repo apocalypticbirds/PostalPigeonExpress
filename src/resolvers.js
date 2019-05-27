@@ -134,6 +134,33 @@ export const resolvers = {
             );
             console.log(`User ${req.userId} send message ${content}`);
             return mssg.save();
+        },
+        addUser: async (root, { email, password, nickname}) => {
+            if (email == "" || password == "" || nickname == "") {
+                throw new Error("You sent empty field");
+            }
+            if (!email.includes("@")){
+                throw new Error("That's not an e-mail");
+            }
+
+            const isFoundEmail = await User.findOne({ email: email });
+            if (isFoundEmail){
+                throw new Error("User with this e-mail already exist");
+            } 
+            
+            const isFoundnickName = await User.findOne({ nickname: nickname });
+            if (isFoundnickName) {
+                throw new Error("User with this nickname already exist");
+            } 
+
+            const newUser = new User({
+                nickname: nickname,
+                conversationsIds: [],
+                email: email,
+                password: password,
+            });
+
+            return newUser.save();
         }
     },
     Subscription: {

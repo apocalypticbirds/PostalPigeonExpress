@@ -91,4 +91,9 @@ _Warning! You should install npm to run this app_
 - Add middleware for auth purposes
 - Add context parameter which is sent to resolvers (for auth)
 
+###Sprint V6 21.05.2019
+Registration added by Client and server side,
+protected before empty fields.
+Verification email and nickname added (cuold not be exist in DB before registration).
+
   
