@@ -96,4 +96,9 @@ Registration added by Client and server side,
 protected before empty fields.
 Verification email and nickname added (cuold not be exist in DB before registration).
 
+###Sprint V7 28.05.2019
+Passwords hashing added
+Comparation for hashed passwords added
+Log out system rebuilt, now tokens does not colides
+
   
