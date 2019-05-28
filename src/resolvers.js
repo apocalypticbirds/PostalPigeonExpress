@@ -76,8 +76,8 @@ export const resolvers = {
             const user = await User.findById(req.userId);
             conv.contributorsIds = conv.contributorsIds.filter(id => id !== req.userId);
             user.conversationsIds = user.conversationsIds.filter(id => id !== id_conv);
-            user.save();
-            return conv.save();
+            await user.save();
+            return await conv.save();
         },
         addUserToConv: async (root, { id_conv, id_user }, req) => {
             if (!req.isAuth) {
