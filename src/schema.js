@@ -55,7 +55,7 @@ type Mutation {
   addUsernameToConv(id_conv: ID!, nickname: String!): Conversation
   addMessage(id_conversation: ID!, content: String!): Message
   leaveConversation(id_conv: ID!): Conversation
-  addUser(email: String!, password: String!, nickname: String!): User
+  addUser(email: String!, password: String!, password2: String!, nickname: String!): User
 }
 
 # The subscription root type, specifying what we can subscribe to

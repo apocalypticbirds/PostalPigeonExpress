@@ -5,6 +5,7 @@ import Conversation from './models/conversation'
 import Message from './models/message'
 import User from './models/user'
 
+const bcrypt = require('bcrypt');
 const SECRET = 'somesupersecretkey';
 const pubsub = new PubSub();
 
@@ -16,7 +17,6 @@ export const resolvers = {
                 throw new Error("Unauthenticated");
             }
             return await Conversation.findById(id);
-            // return conversations.find(conversation => conversation.id === id)
         },
         me: (root, args, req) => {
             if (!req.isAuth) {
@@ -37,19 +37,12 @@ export const resolvers = {
             return User.find({});
         },
         login: async (root, { email, password }) => {
-            //here should be DB request to check if user exist in DB
-            // const user = User.findById("5ca1ca3c1c9d4400003e3593");
             const user = await User.findOne({ email: email });
-            // return Message.find({id_conversation: {$in: parent.id}})
             if (!user) {
                 throw new Error('User does not exist!');
             }
-            //const isEqualPassword = await bcrypt.compare(password, user.password);
-            //here should be used bcrypt which can compare plant password to hash password from DB
-            const isEqualPassword = password === user.password;
-            // console.log(`UserID: ${user._id}`);
-            // console.log(`Nickname: ${user.nickname}`);
-            // console.log(`${password} vs ${user.password}`);
+            let isEqualPassword = await bcrypt.compare(password, user.password)
+
             if (!isEqualPassword) {
                 throw new Error('Password is incorrect!');
             }
@@ -135,12 +128,16 @@ export const resolvers = {
             console.log(`User ${req.userId} send message ${content}`);
             return mssg.save();
         },
-        addUser: async (root, { email, password, nickname}) => {
+        addUser: async (root, { email, password, password2, nickname}) => {
             if (email == "" || password == "" || nickname == "") {
                 throw new Error("You sent empty field");
             }
             if (!email.includes("@")){
                 throw new Error("That's not an e-mail");
+            }
+            
+            if (password !== password2){
+                throw new Error("Password`s validation failed");
             }
 
             const isFoundEmail = await User.findOne({ email: email });
@@ -153,11 +150,14 @@ export const resolvers = {
                 throw new Error("User with this nickname already exist");
             } 
 
+            //tutaj dokonałem modyfikacji
+            const hashedPassword = await bcrypt.hash(password, 10);
+            console.log("Hashed Password: " + hashedPassword + "\n\n\n\n\n\n");
             const newUser = new User({
                 nickname: nickname,
                 conversationsIds: [],
                 email: email,
-                password: password,
+                password: hashedPassword,
             });
 
             return newUser.save();

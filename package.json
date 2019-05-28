@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "bad-words": "^3.0.2",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
     "express": "^4.15.2",
