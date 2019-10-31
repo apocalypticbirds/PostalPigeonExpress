@@ -27,7 +27,7 @@
     "graphql-subscriptions": "^0.4.3",
     "graphql-tools": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.5.0",
+    "mongoose": "^5.7.5",
     "subscriptions-transport-ws": "^0.7.3"
   }
 }
